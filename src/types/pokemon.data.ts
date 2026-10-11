@@ -1,6 +1,9 @@
-import type { BadgeInfo } from './locke.types';
-
-export interface StyledBadgeInfo extends BadgeInfo {
+export interface StyledBadgeInfo {
+    id: number;
+    name: string;
+    leader: string;
+    city: string;
+    type: string;
     activeColor: string;
     borderColor: string;
     bgTint: string;
@@ -38,7 +41,6 @@ export const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string
     dark: { bg: 'rgba(80, 85, 95, 0.35)', text: '#cbd5e1', dot: '#64748b' },
 };
 
-// Paleta de colores temáticos para entrenadores
 export const TRAINER_PALETTES = [
     { name: 'Ámbar', border: '#b8944d', bgBadge: '#3b3425', text: '#e8ca7d' },
     { name: 'Menta', border: '#4a9978', bgBadge: '#233830', text: '#88dbb4' },

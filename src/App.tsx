@@ -11,7 +11,7 @@ import { PokemonSlotModal } from './components/trainers/PokemonSlotModal';
 import { GraveyardModal } from './components/trainers/GraveyardModal';
 import { FaintModal } from './components/trainers/FaintModal';
 import { PokepasteModal } from './components/trainers/PokepasteModal';
-import { lockeService } from './services/locke.service';
+import { lockeService, DEFAULT_GYMS } from './services/locke.service';
 import type { Pokemon, Trainer, RoomSettings } from './types/locke.types';
 
 function AppContent() {
@@ -23,6 +23,7 @@ function AppContent() {
         discordUrl: 'https://discord.gg/pokemon',
         roomPin: '1234',
         adminPin: '9999',
+        gyms: DEFAULT_GYMS,
     });
 
     const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -62,7 +63,6 @@ function AppContent() {
         slotIndex: number;
     } | null>(null);
 
-    // 1. Esperamos a traer los ajustes reales de Supabase antes de evaluar el login
     if (loading) {
         return (
             <div className="min-h-screen bg-[#242730] flex items-center justify-center text-slate-300 font-mono text-sm">
@@ -71,7 +71,6 @@ function AppContent() {
         );
     }
 
-    // 2. Ahora sí: el PIN se validará contra los ajustes actualizados de la base de datos
     if (auth.role === 'locked') {
         return (
             <PinAuthScreen
@@ -81,7 +80,6 @@ function AppContent() {
         );
     }
 
-    // Acciones de actualización contra Supabase
     const handleSaveSettings = async (newS: RoomSettings) => {
         setSettings(newS);
         await lockeService.updateRoomSettings(newS);
@@ -167,7 +165,6 @@ function AppContent() {
         refreshData();
     };
 
-    // Métricas
     const totalLives = trainers.reduce((acc, t) => acc + t.lives, 0);
     const totalBadges = trainers.reduce((acc, t) => acc + t.badges.filter(Boolean).length, 0);
     const totalFainted = trainers.reduce((acc, t) => acc + t.graveyard.length, 0);
@@ -222,7 +219,8 @@ function AppContent() {
                         <TrainerCard
                             key={trainer.id}
                             trainer={trainer}
-                            trainerIndex={index} gyms={settings.gyms} gyms={settings.gyms}
+                            trainerIndex={index}
+                            gyms={settings.gyms}
                             onSelectSlot={(t, pkm, slotIdx) => setSelectedSlotData({ trainer: t, pokemon: pkm, slotIndex: slotIdx })}
                             onToggleBadge={handleToggleBadge}
                             onUpdateLives={handleUpdateLives}
