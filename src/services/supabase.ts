@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Faltan las credenciales de Supabase en el archivo .env');
-}
+const supabaseUrl = (typeof rawUrl === 'string' && rawUrl.startsWith('http')) 
+  ? rawUrl.trim() 
+  : 'https://ocsihusphhwodkwtsurq.supabase.co'\;
+
+const supabaseAnonKey = (typeof rawKey === 'string' && rawKey.length > 10) 
+  ? rawKey.trim() 
+  : 'placeholder-anon-key';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
