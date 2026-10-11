@@ -13,37 +13,10 @@
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#8b5cf6" flood-opacity="0.35" />
     </filter>
   </defs>
-
-  <!-- Base redondeada oscura con borde metalizado -->
   <rect x="6" y="6" width="116" height="116" rx="30" fill="url(#bgPlate)" stroke="rgba(255,255,255,0.14)" stroke-width="3" />
-
-  <!-- Monograma LH estilizado con corte gaming -->
   <g filter="url(#shadow)">
-    <!-- Letra L -->
-    <path d="M 32 30 
-             L 46 30 
-             L 46 80 
-             L 66 80 
-             L 62 94 
-             L 32 94 Z" 
-          fill="url(#lhGlow)" />
-
-    <!-- Letra H (entrelazada y acentuada) -->
-    <path d="M 64 30 
-             L 78 30 
-             L 78 54 
-             L 88 54 
-             L 88 30 
-             L 102 30 
-             L 102 94 
-             L 88 94 
-             L 88 67 
-             L 78 67 
-             L 78 94 
-             L 64 94 Z" 
-          fill="url(#lhGlow)" />
-
-    <!-- Acento central / Núcleo de Pokéball estilizada -->
+    <path d="M 32 30 L 46 30 L 46 80 L 66 80 L 62 94 L 32 94 Z" fill="url(#lhGlow)" />
+    <path d="M 64 30 L 78 30 L 78 54 L 88 54 L 88 30 L 102 30 L 102 94 L 88 94 L 88 67 L 78 67 L 78 94 L 64 94 Z" fill="url(#lhGlow)" />
     <circle cx="83" cy="60.5" r="3" fill="#ffffff" />
   </g>
 </svg>
