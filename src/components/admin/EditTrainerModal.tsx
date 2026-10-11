@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Trainer } from '../../types/locke.types';
 
 interface Props {
@@ -10,15 +10,16 @@ interface Props {
 }
 
 export const EditTrainerModal: React.FC<Props> = ({
-                                                      trainer,
-                                                      isOpen,
-                                                      onClose,
-                                                      onUpdateTrainer,
-                                                      onDeleteTrainer,
-                                                  }) => {
+    trainer,
+    isOpen,
+    onClose,
+    onUpdateTrainer,
+    onDeleteTrainer,
+}) => {
     const [name, setName] = useState('');
     const [avatarData, setAvatarData] = useState<string | undefined>(undefined);
     const [accessCode, setAccessCode] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (trainer) {
@@ -30,7 +31,6 @@ export const EditTrainerModal: React.FC<Props> = ({
 
     if (!isOpen || !trainer) return null;
 
-    // Manejar archivo binario/Base64
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -40,6 +40,13 @@ export const EditTrainerModal: React.FC<Props> = ({
             setAvatarData(reader.result as string);
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleRemoveAvatar = () => {
+        setAvatarData(undefined);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleRegenerateCode = () => {
@@ -91,36 +98,36 @@ export const EditTrainerModal: React.FC<Props> = ({
                         />
                     </div>
 
-                    {/* Subida de foto de perfil binaria */}
                     <div>
-                        <label className="block text-[10px] font-mono text-[#cbd5e1] uppercase mb-1.5 font-semibold">
-                            Foto de Perfil
-                        </label>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-[10px] font-mono text-[#cbd5e1] uppercase font-semibold">
+                                Foto de Perfil
+                            </label>
+                            {avatarData && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveAvatar}
+                                    className="text-[10px] text-red-400 hover:underline"
+                                >
+                                    Quitar foto
+                                </button>
+                            )}
+                        </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-[#252830] border border-white/10 flex items-center justify-center overflow-hidden font-bold text-xs text-[#9ca3af]">
+                            <div className="w-12 h-12 rounded-xl bg-[#252830] border border-white/10 flex items-center justify-center overflow-hidden font-bold text-xs text-[#9ca3af] flex-shrink-0">
                                 {avatarData ? (
                                     <img src={avatarData} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     name.slice(0, 2).toUpperCase()
                                 )}
                             </div>
-                            <div className="flex-1">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="text-[11px] text-[#9ca3af] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-[#424855] file:text-white hover:file:bg-[#4d5463] cursor-pointer"
-                                />
-                                {avatarData && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setAvatarData(undefined)}
-                                        className="text-[10px] text-[#fca5a5] hover:underline block mt-1"
-                                    >
-                                        Quitar foto
-                                    </button>
-                                )}
-                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="text-[11px] text-[#9ca3af] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-[#424855] file:text-white hover:file:bg-[#4d5463] cursor-pointer"
+                            />
                         </div>
                     </div>
 
@@ -138,7 +145,7 @@ export const EditTrainerModal: React.FC<Props> = ({
                             <button
                                 type="button"
                                 onClick={handleRegenerateCode}
-                                className="px-3 py-1.5 bg-[#424855] hover:bg-[#4d5463] text-xs font-semibold text-white rounded-xl transition-colors"
+                                className="px-3 py-1.5 bg-[#424855] hover:bg-[#4d5463] text-xs font-semibold text-white rounded-xl transition-colors cursor-pointer"
                                 title="Generar nuevo PIN"
                             >
                                 Regenerar
@@ -150,7 +157,7 @@ export const EditTrainerModal: React.FC<Props> = ({
                         <button
                             type="button"
                             onClick={handleDelete}
-                            className="px-3 py-1.5 text-xs text-[#fca5a5] hover:bg-[#3f2a2a] rounded-lg transition-colors border border-[#783e3e]/40"
+                            className="px-3 py-1.5 text-xs text-[#fca5a5] hover:bg-[#3f2a2a] rounded-lg transition-colors border border-[#783e3e]/40 cursor-pointer"
                         >
                             Eliminar
                         </button>
@@ -164,7 +171,7 @@ export const EditTrainerModal: React.FC<Props> = ({
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-1.5 text-xs font-bold rounded-xl bg-[#474e5d] hover:bg-[#525969] text-white transition-colors"
+                                className="px-4 py-1.5 text-xs font-bold rounded-xl bg-[#474e5d] hover:bg-[#525969] text-white transition-colors cursor-pointer"
                             >
                                 Guardar
                             </button>

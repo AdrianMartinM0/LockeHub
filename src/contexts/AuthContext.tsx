@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { AuthState } from '../types/locke.types';
+import type { AuthState, RoomSettings, Trainer } from '../types/locke.types';
 
 interface AuthContextType {
     auth: AuthState;
-    loginWithPin: (pin: string, trainers: { id: string; accessCode: string }[]) => boolean;
+    loginWithPin: (pin: string, trainers: Trainer[], settings: RoomSettings) => boolean;
     logout: () => void;
     canEditTrainer: (trainerId: string) => boolean;
 }
@@ -16,7 +16,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                if (parsed.role === 'admin' || parsed.role === 'player') {
+                if (['admin', 'player', 'viewer'].includes(parsed.role)) {
                     return parsed;
                 }
             } catch {
@@ -26,25 +26,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { role: 'locked' };
     });
 
-    const ADMIN_PIN = '9999';
-
     useEffect(() => {
         localStorage.setItem('locke_auth', JSON.stringify(auth));
     }, [auth]);
 
-    const loginWithPin = (pin: string, trainers: { id: string; accessCode: string }[]) => {
+    const loginWithPin = (pin: string, trainers: Trainer[], settings: RoomSettings) => {
         const cleanPin = pin.trim().toUpperCase();
 
-        // Comprobar PIN de Admin
-        if (cleanPin === ADMIN_PIN) {
+        // 1. PIN de Administrador (definido en settings de la BD)
+        if (settings.adminPin && cleanPin === settings.adminPin.trim().toUpperCase()) {
             setAuth({ role: 'admin' });
             return true;
         }
 
-        // Comprobar PIN de Entrenador
-        const trainer = trainers.find((t) => t.accessCode.toUpperCase() === cleanPin);
+        // 2. PIN / Código de Entrenador (acceso personal del jugador)
+        const trainer = trainers.find((t) => t.accessCode.trim().toUpperCase() === cleanPin);
         if (trainer) {
             setAuth({ role: 'player', trainerId: trainer.id });
+            return true;
+        }
+
+        // 3. PIN General de Sala (acceso espectador solo lectura)
+        if (settings.roomPin && cleanPin === settings.roomPin.trim().toUpperCase()) {
+            setAuth({ role: 'viewer' });
             return true;
         }
 

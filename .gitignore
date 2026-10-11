@@ -28,3 +28,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Variables de entorno y secretos
+.env
+.env.local
+.env.*.local
+
+# Supabase local temp
+supabase/.temp/

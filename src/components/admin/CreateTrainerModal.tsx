@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { Trainer } from '../../types/locke.types';
 
 interface Props {
@@ -11,6 +11,7 @@ export const CreateTrainerModal: React.FC<Props> = ({ isOpen, onClose, onTrainer
     const [name, setName] = useState('');
     const [lives, setLives] = useState(30);
     const [avatarData, setAvatarData] = useState<string | undefined>(undefined);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const generateCode = () => {
         const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -28,6 +29,13 @@ export const CreateTrainerModal: React.FC<Props> = ({ isOpen, onClose, onTrainer
         reader.readAsDataURL(file);
     };
 
+    const handleRemoveAvatar = () => {
+        setAvatarData(undefined);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -42,7 +50,7 @@ export const CreateTrainerModal: React.FC<Props> = ({ isOpen, onClose, onTrainer
             maxLives: 30,
             badges: Array(8).fill(false),
             party: [],
-            graveyard: [], // <-- Clave: inicializado para evitar el fallo de render
+            graveyard: [],
         };
 
         onTrainerCreated(newTrainer);
@@ -91,11 +99,22 @@ export const CreateTrainerModal: React.FC<Props> = ({ isOpen, onClose, onTrainer
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-mono text-[#cbd5e1] uppercase mb-1 font-semibold">
-                            Foto de Perfil (Opcional)
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[10px] font-mono text-[#cbd5e1] uppercase font-semibold">
+                                Foto de Perfil (Opcional)
+                            </label>
+                            {avatarData && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveAvatar}
+                                    className="text-[10px] text-red-400 hover:underline"
+                                >
+                                    Quitar foto
+                                </button>
+                            )}
+                        </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#252830] border border-white/10 flex items-center justify-center overflow-hidden font-bold text-xs text-[#9ca3af]">
+                            <div className="w-10 h-10 rounded-xl bg-[#252830] border border-white/10 flex items-center justify-center overflow-hidden font-bold text-xs text-[#9ca3af] flex-shrink-0">
                                 {avatarData ? (
                                     <img src={avatarData} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
@@ -103,6 +122,7 @@ export const CreateTrainerModal: React.FC<Props> = ({ isOpen, onClose, onTrainer
                                 )}
                             </div>
                             <input
+                                ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}

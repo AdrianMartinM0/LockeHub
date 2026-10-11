@@ -1,4 +1,13 @@
-export type UserRole = 'locked' | 'player' | 'admin';
+export type UserRole = 'locked' | 'viewer' | 'player' | 'admin';
+
+export interface GymConfig {
+    id: number;
+    name: string;
+    leader: string;
+    city: string;
+    type: string;
+    iconUrl?: string;
+}
 
 export interface RoomSettings {
     title: string;
@@ -6,6 +15,9 @@ export interface RoomSettings {
     bannerUrl?: string;
     discordUrl?: string;
     downloadUrl?: string;
+    roomPin: string;
+    adminPin: string;
+    gyms: GymConfig[];
 }
 
 export interface Pokemon {
@@ -19,7 +31,7 @@ export interface Pokemon {
     types: string[];
     ability?: string;
     heldItem?: string;
-    moves?: string[]; // Hasta 4 movimientos
+    moves?: string[];
     status: 'party' | 'fainted';
     faintCause?: string;
     faintedAt?: string;

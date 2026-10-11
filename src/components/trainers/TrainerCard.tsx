@@ -1,11 +1,12 @@
 import React from 'react';
-import type { Trainer, Pokemon } from '../../types/locke.types';
+import type { Trainer, Pokemon, GymConfig } from '../../types/locke.types';
 import { useAuth } from '../../contexts/AuthContext';
-import { KANTO_BADGES, TYPE_STYLES, TRAINER_PALETTES } from '../../types/pokemon.data';
+import { TYPE_STYLES, TRAINER_PALETTES } from '../../types/pokemon.data';
 
 interface Props {
     trainer: Trainer;
     trainerIndex?: number;
+    gyms?: GymConfig[];
     onSelectSlot: (trainer: Trainer, pokemon: Pokemon | null, slotIndex: number) => void;
     onToggleBadge: (trainerId: string, badgeIndex: number) => void;
     onUpdateLives: (trainerId: string, delta: number) => void;
@@ -15,15 +16,16 @@ interface Props {
 }
 
 export const TrainerCard: React.FC<Props> = ({
-                                                 trainer,
-                                                 trainerIndex = 0,
-                                                 onSelectSlot,
-                                                 onToggleBadge,
-                                                 onUpdateLives,
-                                                 onOpenGraveyard,
-                                                 onEditTrainer,
-                                                 onOpenPokepaste,
-                                             }) => {
+    trainer,
+    trainerIndex = 0,
+    gyms = [],
+    onSelectSlot,
+    onToggleBadge,
+    onUpdateLives,
+    onOpenGraveyard,
+    onEditTrainer,
+    onOpenPokepaste,
+}) => {
     const { canEditTrainer, auth } = useAuth();
     const editable = canEditTrainer(trainer.id);
     const totalBadges = trainer.badges.filter(Boolean).length;
@@ -73,8 +75,8 @@ export const TrainerCard: React.FC<Props> = ({
                                         color: palette.text,
                                     }}
                                 >
-                  {auth.role === 'admin' ? 'ADMIN' : 'TÚ'}
-                </span>
+                                    {auth.role === 'admin' ? 'ADMIN' : 'TÚ'}
+                                </span>
                             )}
                         </div>
 
@@ -128,33 +130,40 @@ export const TrainerCard: React.FC<Props> = ({
             </div>
 
             <div className="p-4 space-y-4">
-                {/* Medallas */}
+                {/* Medallas dinámicas de la sala */}
                 <div>
                     <div className="flex items-center justify-between text-[11px] font-mono text-[#b3b9c6] mb-2">
                         <span className="font-semibold text-slate-300">MEDALLAS</span>
-                        <span className="font-bold text-white">{totalBadges} / {KANTO_BADGES.length}</span>
+                        <span className="font-bold text-white">{totalBadges} / 8</span>
                     </div>
 
                     <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-                        {KANTO_BADGES.map((badge, idx) => {
+                        {Array.from({ length: 8 }).map((_, idx) => {
+                            const gym = gyms[idx] || { name: `Medalla ${idx + 1}`, leader: '', type: 'normal' };
                             const hasBadge = trainer.badges[idx];
+                            const typeStyle = TYPE_STYLES[gym.type?.toLowerCase()] || { bg: 'rgba(255,255,255,0.08)', text: '#d1d5db', dot: '#d1d5db' };
+
                             return (
                                 <button
-                                    key={badge.id}
+                                    key={idx}
                                     disabled={!editable}
                                     onClick={() => onToggleBadge(trainer.id, idx)}
-                                    title={`${badge.name} (${badge.leader})`}
+                                    title={`${gym.name} - Líder: ${gym.leader || 'Desc.'} (${gym.city || ''})`}
                                     style={{
-                                        backgroundColor: hasBadge ? badge.bgTint : '#252830',
-                                        borderColor: hasBadge ? badge.borderColor : 'rgba(255, 255, 255, 0.08)',
-                                        color: hasBadge ? badge.activeColor : '#6b7280',
+                                        backgroundColor: hasBadge ? typeStyle.bg : '#252830',
+                                        borderColor: hasBadge ? typeStyle.dot : 'rgba(255, 255, 255, 0.08)',
+                                        color: hasBadge ? typeStyle.text : '#6b7280',
                                     }}
                                     className={`py-2 px-1 rounded-xl border text-center transition-all flex flex-col items-center justify-center ${
                                         hasBadge ? 'shadow-sm scale-[1.02]' : 'hover:border-white/20'
                                     } ${editable ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
                                 >
-                                    <span className="text-xs font-mono font-black">{idx + 1}</span>
-                                    <span className="text-[10px] font-medium truncate w-full mt-0.5">{badge.name}</span>
+                                    {gym.iconUrl ? (
+                                        <img src={gym.iconUrl} alt={gym.name} className="w-5 h-5 object-contain pixelated mb-0.5" />
+                                    ) : (
+                                        <span className="text-xs font-mono font-black">{idx + 1}</span>
+                                    )}
+                                    <span className="text-[9px] font-medium truncate w-full mt-0.5">{gym.name}</span>
                                 </button>
                             );
                         })}
@@ -200,9 +209,7 @@ export const TrainerCard: React.FC<Props> = ({
                                 >
                                     {pkm ? (
                                         <div className="w-full flex flex-col justify-between h-full space-y-1.5">
-                                            {/* Cabecera horizontal compacta: Sprite a la izquierda, Info principal al centro/derecha, Nivel arriba a la derecha */}
                                             <div className="flex items-start gap-2.5 w-full">
-                                                {/* Sprite */}
                                                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-black/25 rounded-lg border border-white/5">
                                                     <img
                                                         src={pkm.spriteUrl}
@@ -212,7 +219,6 @@ export const TrainerCard: React.FC<Props> = ({
                                                     />
                                                 </div>
 
-                                                {/* Nombre, Mote y Tipos ocupando el hueco central */}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-1">
                                                         <div className="flex items-center gap-1 min-w-0">
@@ -224,20 +230,17 @@ export const TrainerCard: React.FC<Props> = ({
                                                             {pkm.isShiny && <span className="text-[10px] text-amber-300 leading-none">✨</span>}
                                                         </div>
 
-                                                        {/* Nivel compacto arriba a la derecha */}
                                                         <span className="font-mono text-[9px] text-white bg-black/40 px-1 py-0.5 rounded border border-white/10 font-bold flex-shrink-0">
-                    Nv.{pkm.level}
-                  </span>
+                                                            Nv.{pkm.level}
+                                                        </span>
                                                     </div>
 
-                                                    {/* Especie pequeña solo si el mote es diferente */}
                                                     {hasCustomNickname && (
                                                         <p className="text-[10px] text-[#8c929e] font-mono capitalize truncate leading-tight">
                                                             {pkm.species}
                                                         </p>
                                                     )}
 
-                                                    {/* Tipos justo al lado del sprite */}
                                                     <div className="flex gap-1 mt-1 flex-wrap">
                                                         {pkm.types.map((type) => {
                                                             const style = TYPE_STYLES[type.toLowerCase()] || { bg: 'rgba(255,255,255,0.1)', text: '#e2e8f0', dot: '#94a3b8' };
@@ -247,31 +250,29 @@ export const TrainerCard: React.FC<Props> = ({
                                                                     style={{ backgroundColor: style.bg, color: style.text }}
                                                                     className="text-[8px] uppercase font-mono font-bold px-1.5 py-0.5 rounded flex items-center gap-1"
                                                                 >
-                        <span className="w-1 h-1 rounded-full" style={{ backgroundColor: style.dot }} />
+                                                                    <span className="w-1 h-1 rounded-full" style={{ backgroundColor: style.dot }} />
                                                                     {type}
-                      </span>
+                                                                </span>
                                                             );
                                                         })}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Fila intermedia: Habilidad y Objeto en una sola línea limpia */}
                                             <div className="flex items-center justify-between gap-1 text-[9px] font-mono pt-1 border-t border-white/5">
                                                 {pkm.ability ? (
                                                     <span className="text-[#9ca3af] truncate">
-                  Hab: <strong className="text-[#d1d5db] font-medium capitalize">{pkm.ability}</strong>
-                </span>
+                                                        Hab: <strong className="text-[#d1d5db] font-medium capitalize">{pkm.ability}</strong>
+                                                    </span>
                                                 ) : <span />}
 
                                                 {pkm.heldItem && (
                                                     <span className="text-[#93c5fd] bg-[#1e2430] px-1.5 py-0.5 rounded border border-blue-500/20 truncate">
-                  📦 {pkm.heldItem}
-                </span>
+                                                        📦 {pkm.heldItem}
+                                                    </span>
                                                 )}
                                             </div>
 
-                                            {/* 4 Movimientos en rejilla compacta si existen */}
                                             {pkm.moves && pkm.moves.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-1 pt-1 border-t border-white/5 text-[8.5px] font-mono text-[#9ca3af]">
                                                     {pkm.moves.slice(0, 4).map((m, mIdx) => (
@@ -280,8 +281,8 @@ export const TrainerCard: React.FC<Props> = ({
                                                             className="bg-[#1f2229] px-1.5 py-0.5 rounded truncate border border-white/5"
                                                             title={m}
                                                         >
-                    • {m}
-                  </span>
+                                                            • {m}
+                                                        </span>
                                                     ))}
                                                 </div>
                                             )}
